@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
+	"github.com/chiramlittleton/iam-server/api"
+	"github.com/chiramlittleton/iam-server/internal/storage"
 )
 
 func main() {
@@ -15,14 +16,13 @@ func main() {
 		port = "8080"
 	}
 
-	// Initialize Router
-	router := mux.NewRouter()
+	// Initialize database connection
+	if err := storage.ConnectDB(); err != nil {
+		log.Fatal(err)
+	}
 
-	// Health Check
-	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("IAM Service is Running"))
-	}).Methods("GET")
+	// Initialize Router with database
+	router := api.NewRouter(storage.DB) // ✅ Pass DB to `NewRouter()`
 
 	// Start Server
 	log.Printf("IAM Service running on port %s", port)

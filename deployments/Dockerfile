@@ -16,29 +16,33 @@ WORKDIR /app/cmd/server
 # Force Linux AMD64 Build (x86_64)
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/iam-server
 
+# Build the migration binary
+WORKDIR /app/cmd/migrate
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/migrate
+
 # Use a minimal runtime image
 FROM alpine:latest
 
 WORKDIR /root/
 
 # Install necessary dependencies
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates curl
 
-# Copy the built binary from the builder stage
+# Copy the built binaries from the builder stage
 COPY --from=builder /app/iam-server /root/iam-server
+COPY --from=builder /app/migrate /root/migrate
 
-# Ensure the binary is executable
-RUN chmod +x /root/iam-server
+# Ensure the binaries are executable
+RUN chmod +x /root/iam-server /root/migrate
 
-# Check binary architecture
-RUN ldd /root/iam-server || true
+# ✅ Copy the database migration files into the final container
+COPY --from=builder /app/db/migrations /root/migrations
 
 # Expose port
 EXPOSE 8080
 
-# Correct CMD
-CMD ["/root/iam-server"]
-
 # Docker Health Check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -f http://localhost:8080/health || exit 1
 
+# Default command to run the IAM server
+CMD ["/root/iam-server"]

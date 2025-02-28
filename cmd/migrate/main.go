@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 		dbURL = "postgres://admin:adminpassword@postgres:5432/iam_db?sslmode=disable"
 	}
 
-	db, err := sql.Open("postgres", dbURL)
+	db, err := sql.Open("pgx", dbURL) // ✅ Correct driver name for pgx
 	if err != nil {
 		log.Fatal("Cannot connect to DB:", err)
 	}

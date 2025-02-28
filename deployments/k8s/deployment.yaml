@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: iam-server
-          image: your-dockerhub-user/iam-server:latest
+          image: chiramlittleton/iam-server:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
           envFrom:
