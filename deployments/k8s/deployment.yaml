@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iam-server
+  labels:
+    app: iam-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: iam-server
+  template:
+    metadata:
+      labels:
+        app: iam-server
+    spec:
+      containers:
+        - name: iam-server
+          image: your-dockerhub-user/iam-server:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: iam-config
+            - secretRef:
+                name: iam-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
