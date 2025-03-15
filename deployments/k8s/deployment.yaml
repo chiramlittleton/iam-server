@@ -17,7 +17,7 @@ spec:
       containers:
         - name: iam-server
           image: chiramlittleton/iam-server:latest
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
