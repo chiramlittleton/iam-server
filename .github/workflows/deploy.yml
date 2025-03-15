@@ -48,7 +48,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "Deploying IAM Service..."
+            
+            # Ensure the repository exists
+            if [ ! -d "~/iam-server" ]; then
+              git clone https://github.com/${{ github.repository }} ~/iam-server
+            fi
+            
             cd ~/iam-server
             git pull origin main
-            kubectl set image deployment/$K8S_DEPLOYMENT iam-server=$IMAGE_NAME:latest -n default
-            kubectl rollout status deployment/$K8S_DEPLOYMENT -n default
+
+            # Update Kubernetes deployment
+            kubectl set image deployment/iam-server iam-server=${{ env.IMAGE_NAME }}:latest -n default
+            kubectl rollout status deployment/iam-server -n default
