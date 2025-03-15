@@ -40,7 +40,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up SSH connection
+        - name: Set up SSH connection and deploy
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -57,6 +57,11 @@ jobs:
             cd ~/iam-server
             git pull origin main
 
-            # Update Kubernetes deployment
-            kubectl set image deployment/iam-server iam-server=${{ env.IMAGE_NAME }}:latest -n default
-            kubectl rollout status deployment/iam-server -n default
+            # ✅ First time deployment: Apply manifests if missing
+            kubectl apply -f ~/iam-server/deployments/k8s/
+
+            # ✅ If deployment exists, update the image
+            if kubectl get deployment iam-server -n default; then
+              kubectl set image deployment/iam-server iam-server=${{ env.IMAGE_NAME }}:latest -n default
+              kubectl rollout status deployment/iam-server -n default
+            fi
